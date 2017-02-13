@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Panel, FormGroup, 
+import {Panel, FormGroup, Button,
         ControlLabel, FormControl} from "react-bootstrap";
 import axios from "axios";
 
@@ -15,6 +15,8 @@ export default class PlaceAndParameter extends Component{
             parameters:[],
             currentCountryCode:"",
             currentCity:"",
+            currentLocation:"",
+            currentParameter:"",
             error: false
         };
         
@@ -22,6 +24,9 @@ export default class PlaceAndParameter extends Component{
         // this object as now, in order to access the state.
         this.onSelectChangeCountry = this.onSelectChangeCountry.bind(this);
         this.onSelectChangeCity = this.onSelectChangeCity.bind(this);
+        this.onSelectChangeLocations = this.onSelectChangeLocations.bind(this);
+        this.onSelectChangeParameter = this.onSelectChangeParameter.bind(this);
+        this.onFetchDataClick = this.onFetchDataClick.bind(this);
     }
     
     componentWillMount(){
@@ -63,20 +68,36 @@ export default class PlaceAndParameter extends Component{
         });
     }
     
+    onSelectChangeLocations(e){
+        console.log("selected location: ", e.target.value);
+        this.setState({currentLocation: e.target.value});
+    }
+    
+    onSelectChangeParameter(e){
+        console.log("selected location: ", e.target.value);
+    }
+    
+    onFetchDataClick(e){
+        console.log('button pressed');
+    }
+    
     render(){
         // TODO: fix the format of the strings so with subscript
        var parameters=["PM 2.5", "PM 10", "SO2", "NO2", "O3", "CO", "BC"];
        return (
+           <div>
            <Panel bsStyle="primary" header="Place & Parameter">
-                <SelectForm controlId="countriesId" controlLabel="Country" things="countries" property="name"
+                <SelectForm controlId="countriesId" controlLabel="Country" plural="countries" property="name"
                 requestParameter="code" options={this.state.countries} onChange={this.onSelectChangeCountry}/>
-                <SelectForm controlId="citiesId" controlLabel="City" things="cities" property="city"
+                <SelectForm controlId="citiesId" controlLabel="City" plural="cities" property="city"
                 requestParameter="city" options={this.state.cities} onChange={this.onSelectChangeCity}/>
-                <SelectForm controlId="locationsId" controlLabel="Location" things="locations" property="location"
-                requestParameter="" options={this.state.locations} onChange={this.onSelectChangeCountry}/>
-                <SelectForm controlId="parametersId" controlLabel="Parameter" things="parameters" property=""
-                requestParameter="" options={parameters} onChange={this.onSelectChangeCountry}/>
+                <SelectForm controlId="locationsId" controlLabel="Location" plural="locations" property="location"
+                requestParameter="" options={this.state.locations} onChange={this.onSelectChangeLocations}/>
+                <SelectForm controlId="parametersId" controlLabel="Parameter" plural="parameters" property=""
+                requestParameter="" options={parameters} onChange={this.onSelectChangeParameter}/>
            </Panel>
+           <Button bsStyle="primary" onClick={this.onFetchDataClick}>Fetch Data</Button>
+           </div>
        ); 
     }
 }
@@ -84,15 +105,13 @@ export default class PlaceAndParameter extends Component{
 class SelectForm extends Component{
     
     render(){
-     // TODO: fix the options rendering
         var _this = this;
-        
         return (
             <FormGroup controlId={this.props.controlId}>
                 <ControlLabel>{this.props.controlLabel}</ControlLabel>
-                <FormControl componentClass="select" placeholder={"All "+this.props.things}
+                <FormControl componentClass="select" placeholder={"All "+this.props.plural}
                     onChange={this.props.onChange}>
-                    <option>{"All "+this.props.things}</option>
+                    <option>{"All "+this.props.plural}</option>
                     {
                       this.props.options.map(function(option, key) {
                         /*the way this has been implemented, the parameters options array will not
@@ -104,7 +123,10 @@ class SelectForm extends Component{
                         // For countries: we use the code
                         // For cities: we use the actual city as we already stored the current country code in the state
                     
-                        var requestParameter = {}; 
+                        // we need to initialize both name and request parameter with option
+                        // in case we are dealing with parameter, which is just an array of strings
+                        var requestParameter = option; 
+                        var name = option; 
                         if(_this.props.property.length>0){
                             requestParameter = option[_this.props.requestParameter];
                             name = option[_this.props.property]; // the name is just what will appear in the select box
