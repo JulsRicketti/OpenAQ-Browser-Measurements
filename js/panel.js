@@ -1,7 +1,9 @@
 import React, {Component} from "react";
-import {Panel, FormGroup, Button,
-        ControlLabel, FormControl} from "react-bootstrap";
+import {Panel, Button,} from "react-bootstrap";
 import axios from "axios";
+
+import SelectForm from "./select-form";
+import MeasurementsTable from "./measurements-table";
 
 export default class PlaceAndParameter extends Component{
     constructor(props){
@@ -17,6 +19,7 @@ export default class PlaceAndParameter extends Component{
             currentCity:"",
             currentLocation:"",
             currentParameter:"",
+            measurements:"",
             error: false
         };
         
@@ -31,11 +34,17 @@ export default class PlaceAndParameter extends Component{
     
     componentWillMount(){
         var _this = this;
-        
+        //whenever we first start, countries and parameters are already set
+        // therefore, we have to make both those requests as the component mounts
         axios.get("https://api.openaq.org/v1/countries")
         .then(function(response){
             _this.setState({countries: response.data.results})
         });
+        
+        axios.get("https://api.openaq.org/v1/parameters")
+            .then (function(response){
+            _this.setState({parameters:response.data.results});
+        })
     }
     
     onSelectChangeCountry(e){
@@ -56,7 +65,6 @@ export default class PlaceAndParameter extends Component{
         var _this = this;
         //Objective: when the country changes, we need to update the values in the city select box.
         //For this, we first start with a get request to list the cities of the selected country:
-        console.log('the current target value: ', e.target.value);
         var currentCity = e.target.value;
         axios.get("https://api.openaq.org/v1/locations?country="+this.state.currentCountryCode+"&city="+currentCity)
         .then(function(response){
@@ -69,21 +77,41 @@ export default class PlaceAndParameter extends Component{
     }
     
     onSelectChangeLocations(e){
-        console.log("selected location: ", e.target.value);
         this.setState({currentLocation: e.target.value});
     }
     
     onSelectChangeParameter(e){
-        console.log("selected location: ", e.target.value);
+        this.setState({currentParameter: e.target.value});
     }
     
     onFetchDataClick(e){
+        var _this = this;
         console.log('button pressed');
+        // fetchDataUrl is the base URL, assuming none of the select boxes were changed
+        var fetchDataUrl = "https://api.openaq.org/v1/measurements?";
+        
+        /*If select boxes have been changed, we need to add their new value to fetchDataUrl, to make the
+        appropriate request.*/
+        if(this.state.currentCountryCode.length>0 && this.state.currentCountryCode!="All countries")
+            fetchDataUrl += "country="+this.state.currentCountryCode+"&";
+        if(this.state.currentCity.length>0 && this.state.currentCity!="All cities")
+            fetchDataUrl += "city="+this.state.currentCity+"&";
+        if(this.state.currentLocation.length>0 && this.state.currentLocation!="All locations")    
+            fetchDataUrl += "location="+this.state.currentLocation+"&";
+        if(this.state.currentParameter.length>0 && this.state.currentParameter!="All parameters")
+            fetchDataUrl += "parameter="+this.state.currentParameter;
+        
+        console.log(fetchDataUrl);
+        axios.get(fetchDataUrl)
+        .then(function(response){
+            //we pass in the function from the App file so that the measurements data can be passed into
+            // the MeasurementTable component
+            _this.props.fetchMeasurements(response.data.results);
+        })
     }
     
     render(){
         // TODO: fix the format of the strings so with subscript
-       var parameters=["PM 2.5", "PM 10", "SO2", "NO2", "O3", "CO", "BC"];
        return (
            <div>
            <Panel bsStyle="primary" header="Place & Parameter">
@@ -93,50 +121,11 @@ export default class PlaceAndParameter extends Component{
                 requestParameter="city" options={this.state.cities} onChange={this.onSelectChangeCity}/>
                 <SelectForm controlId="locationsId" controlLabel="Location" plural="locations" property="location"
                 requestParameter="" options={this.state.locations} onChange={this.onSelectChangeLocations}/>
-                <SelectForm controlId="parametersId" controlLabel="Parameter" plural="parameters" property=""
-                requestParameter="" options={parameters} onChange={this.onSelectChangeParameter}/>
+                <SelectForm controlId="parametersId" controlLabel="Parameter" plural="parameters" property="name"
+                requestParameter="id" options={this.state.parameters} onChange={this.onSelectChangeParameter}/>
            </Panel>
-           <Button bsStyle="primary" onClick={this.onFetchDataClick}>Fetch Data</Button>
+           <Button bsStyle="primary" onClick={this.onFetchDataClick}>Fetch Data</Button> <br/>
            </div>
        ); 
-    }
-}
-
-class SelectForm extends Component{
-    
-    render(){
-        var _this = this;
-        return (
-            <FormGroup controlId={this.props.controlId}>
-                <ControlLabel>{this.props.controlLabel}</ControlLabel>
-                <FormControl componentClass="select" placeholder={"All "+this.props.plural}
-                    onChange={this.props.onChange}>
-                    <option>{"All "+this.props.plural}</option>
-                    {
-                      this.props.options.map(function(option, key) {
-                        /*the way this has been implemented, the parameters options array will not
-                        have a property, so we need to check that before rendering the options, using the
-                        props.
-                        */
-                        // this variable is used as a requets parameter in the request URL, so its origin changes
-                        // depending on the form.
-                        // For countries: we use the code
-                        // For cities: we use the actual city as we already stored the current country code in the state
-                    
-                        // we need to initialize both name and request parameter with option
-                        // in case we are dealing with parameter, which is just an array of strings
-                        var requestParameter = option; 
-                        var name = option; 
-                        if(_this.props.property.length>0){
-                            requestParameter = option[_this.props.requestParameter];
-                            name = option[_this.props.property]; // the name is just what will appear in the select box
-                        }
-
-                      return <option key={key} value={requestParameter}>{name}</option>
-                      })
-                    }
-                </FormControl>
-                </FormGroup>
-        );
     }
 }

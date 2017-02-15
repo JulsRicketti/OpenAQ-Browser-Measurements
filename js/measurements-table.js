@@ -4,11 +4,12 @@ import {Table} from "react-bootstrap";
 export default class MeasurementsTable extends Component{
     render(){
         var measurements = this.props.measurements;
+        console.log("measurements:", measurements);
         // The measurements props is where the data from the fetch button will
         // be passed. On the Place and Parameter component, we will initialize it
         // as an empty string for ease to check if the request has been made or not.
         // If the data is still empty we will just return null so that there is no table to be rendered.
-        if (measurements != ""){
+        if (measurements !== ""){
             var tableBody = (<tbody>
                              {measurements.map(function(item, key){
                                 //we need to check if the coordinate property exists
