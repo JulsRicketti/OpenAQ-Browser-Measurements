@@ -10,7 +10,6 @@ export default class PlaceAndParameter extends Component{
         super(props);
         
         this.state = {
-            data:[],
             countries:[],
             cities:[],
             locations:[],
@@ -37,12 +36,12 @@ export default class PlaceAndParameter extends Component{
         //whenever we first start, countries and parameters are already set
         // therefore, we have to make both those requests as the component mounts
         axios.get("https://api.openaq.org/v1/countries")
-        .then(function(response){
+        .then((response)=>{
             _this.setState({countries: response.data.results})
         });
         
         axios.get("https://api.openaq.org/v1/parameters")
-            .then (function(response){
+            .then ((response)=>{
             _this.setState({parameters:response.data.results});
         })
     }
@@ -52,8 +51,8 @@ export default class PlaceAndParameter extends Component{
         var countryCode = e.target.value;
         //Objective: when the country changes, we need to update the values in the city select box.
         //For this, we first start with a get request to list the cities of the selected country:
-        axios.get("https://api.openaq.org/v1/cities?limit=1000&country="+countryCode)
-        .then(function(response){
+        axios.get("https://api.openaq.org/v1/cities?country="+countryCode)
+        .then((response)=>{
             _this.setState({
                                 cities: response.data.results,
                                 currentCountryCode: countryCode
@@ -67,7 +66,7 @@ export default class PlaceAndParameter extends Component{
         //For this, we first start with a get request to list the cities of the selected country:
         var currentCity = e.target.value;
         axios.get("https://api.openaq.org/v1/locations?country="+this.state.currentCountryCode+"&city="+currentCity)
-        .then(function(response){
+        .then((response)=>{
             console.log('response:', response);
             _this.setState({
                             locations: response.data.results,
@@ -86,8 +85,7 @@ export default class PlaceAndParameter extends Component{
     
     onFetchDataClick(e){
         var _this = this;
-        console.log('button pressed');
-        // fetchDataUrl is the base URL, assuming none of the select boxes were changed
+        // fetchDataUrl is the base URL, when none of the select boxes were changed
         var fetchDataUrl = "https://api.openaq.org/v1/measurements?";
         
         /*If select boxes have been changed, we need to add their new value to fetchDataUrl, to make the
@@ -101,9 +99,8 @@ export default class PlaceAndParameter extends Component{
         if(this.state.currentParameter.length>0 && this.state.currentParameter!="All parameters")
             fetchDataUrl += "parameter="+this.state.currentParameter;
         
-        console.log(fetchDataUrl);
         axios.get(fetchDataUrl)
-        .then(function(response){
+        .then((response)=>{
             //we pass in the function from the App file so that the measurements data can be passed into
             // the MeasurementTable component
             _this.props.fetchMeasurements(response.data.results);
@@ -115,13 +112,13 @@ export default class PlaceAndParameter extends Component{
        return (
            <div>
            <Panel bsStyle="primary" header="Place & Parameter">
-                <SelectForm controlId="countriesId" controlLabel="Country" plural="countries" property="name"
+                <SelectForm controlLabel="Country" plural="countries" property="name"
                 requestParameter="code" options={this.state.countries} onChange={this.onSelectChangeCountry}/>
-                <SelectForm controlId="citiesId" controlLabel="City" plural="cities" property="city"
+                <SelectForm controlLabel="City" plural="cities" property="city"
                 requestParameter="city" options={this.state.cities} onChange={this.onSelectChangeCity}/>
-                <SelectForm controlId="locationsId" controlLabel="Location" plural="locations" property="location"
+                <SelectForm controlLabel="Location" plural="locations" property="location"
                 requestParameter="" options={this.state.locations} onChange={this.onSelectChangeLocations}/>
-                <SelectForm controlId="parametersId" controlLabel="Parameter" plural="parameters" property="name"
+                <SelectForm controlLabel="Parameter" plural="parameters" property="name"
                 requestParameter="id" options={this.state.parameters} onChange={this.onSelectChangeParameter}/>
            </Panel>
            <Button bsStyle="primary" onClick={this.onFetchDataClick}>Fetch Data</Button> <br/>
