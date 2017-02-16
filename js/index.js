@@ -14,6 +14,8 @@ class App extends Component{
         
         this.state = {measurements:"", error:""};
         
+        // we need to use the bind function so we can later have the same scope of the
+        // this object as now, in order to access it's states.
         this.fetchMeasurements = this.fetchMeasurements.bind(this);
         this.fetchError = this.fetchError.bind(this);
     }
@@ -31,6 +33,11 @@ class App extends Component{
     }
     
     render(){
+        /*If an error occurs, a panel with it is displayed instead of the MeasurementsTable component.
+        I also chose to display it even if the MeasurementsTable wasn't requested.
+        To do that, we check if there is an error message at all (so whenever the string has a length larger than 0),
+        if that is the case, the error will be displayed beneath the PlaceAndParameter panel
+        */
         var isThereError = this.state.error.length>0;
         var measurementsTable = (<MeasurementsTable measurements={this.state.measurements}/>);
         var errorMessage = (<ErrorMessage error={this.state.error}/>)

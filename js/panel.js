@@ -22,7 +22,7 @@ export default class PlaceAndParameter extends Component{
         };
         
         // we need to use the bind function so we can later have the same scope of the
-        // this object as now, in order to access the state.
+        // this object as now, in order to access it's states.
         this.onSelectChangeCountry = this.onSelectChangeCountry.bind(this);
         this.onSelectChangeCity = this.onSelectChangeCity.bind(this);
         this.onSelectChangeLocations = this.onSelectChangeLocations.bind(this);
@@ -115,7 +115,7 @@ export default class PlaceAndParameter extends Component{
         .then((response)=>{
             //we pass in the function from the App file so that the measurements data can be passed into
             // the MeasurementTable component
-            _this.props.fetchMeasurements(response.data.results);
+            _this.props.fetchMeasurements(response.data);
         })
         .catch((error)=>{
             this.props.fetchError(error);
