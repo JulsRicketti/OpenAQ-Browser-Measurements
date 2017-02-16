@@ -1,5 +1,5 @@
 import React, {Component} from "react";
-import {Panel, Button,} from "react-bootstrap";
+import {Panel, Button, Glyphicon} from "react-bootstrap";
 import axios from "axios";
 
 import SelectForm from "./select-form";
@@ -135,7 +135,7 @@ export default class PlaceAndParameter extends Component{
                 <SelectForm controlLabel="Parameter" plural="parameters" property="name"
                 requestParameter="id" options={this.state.parameters} onChange={this.onSelectChangeParameter}/>
            </Panel>
-           <Button bsStyle="primary" onClick={this.onFetchDataClick}>Fetch Data</Button> <br/>
+           <Button bsStyle="primary" onClick={this.onFetchDataClick}><Glyphicon glyph="glyphicon glyphicon-refresh" />Fetch Data</Button> <br/>
            </div>
        ); 
     }
