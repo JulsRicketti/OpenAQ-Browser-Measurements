@@ -9,7 +9,8 @@ export default class MeasurementsTable extends Component{
 
     }
     render(){
-        var _this = this;
+        var _this = this; // I save the current "this" in a variable order to be able to access it again
+        //whenever the scope changes (which will happen in the map() function)
         var measurements = this.props.measurements;
         // The measurements props is where the data from the fetch button will
         // be passed. On the Place and Parameter component, we will initialize it
