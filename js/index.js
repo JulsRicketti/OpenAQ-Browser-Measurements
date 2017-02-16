@@ -4,11 +4,7 @@ import {Button, Grid, Row, Col} from "react-bootstrap";
 
 import PlaceAndParameter from "./panel";
 import MeasurementsTable from "./measurements-table";
-
-//TODO list:
-// get the measurements table to work on this file, it is cleaner this way and I have more freedom with its dimentions
-// make sure all variations of requests for the measurements table work
-//clean out the code, perhaps add some array functions to make it prettier
+import ErrorMessage from "./error";
 
 //This is where I will put everything together to appear on the screen
 class App extends Component{
@@ -16,9 +12,10 @@ class App extends Component{
     constructor(props){
         super(props);
         
-        this.state = {measurements:""};
+        this.state = {measurements:"", error:""};
         
         this.fetchMeasurements = this.fetchMeasurements.bind(this);
+        this.fetchError = this.fetchError.bind(this);
     }
     
     //the only purpose of this function is to get the data from PlaceAndParameter and
@@ -27,21 +24,30 @@ class App extends Component{
         this.setState({measurements: measurements});
     }
     
+    // the only purpose of this function is to get the error message in case it occurs
+    // during one of the requests in the PlaceAndParameter component.
+    fetchError(error){
+       this.setState({error: error});
+    }
+    
     render(){
+        var isThereError = this.state.error.length>0;
+        var measurementsTable = (<MeasurementsTable measurements={this.state.measurements}/>);
+        var errorMessage = (<ErrorMessage error={this.state.error}/>)
         return(
           <Grid>
             <Row><br/></Row>
             <Row>
                 <Col sm={3} md={3} lg={3}></Col>
                 <Col sm={6} md={6} lg={6}>
-                    <PlaceAndParameter fetchMeasurements={this.fetchMeasurements}/>
+                    <PlaceAndParameter fetchMeasurements={this.fetchMeasurements} fetchError={this.fetchError}/>
                 </Col>
                 <Col sm={3} md={3} lg={3}></Col>
             </Row>
             <Row><br/></Row>
             <Row>
                 <Col>
-                    <MeasurementsTable measurements={this.state.measurements}/>
+                    {isThereError ? errorMessage : measurementsTable}
                 </Col>
             </Row>
           </Grid>
