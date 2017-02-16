@@ -31,7 +31,11 @@ export default class PlaceAndParameter extends Component{
     }
     
     componentWillMount(){
-        var _this = this;
+        var _this = this; // I save the current "this" in a variable order to be able to access it again
+        //whenever the scope changes (which will happen in the then() and catch() functions)
+        /*You will see this (no pun intended) same operation done in all of the functions where I have to
+        access the component's props, states and functions in the promise functions, since the "this" scope changes.*/
+        
         //whenever we first start, countries and parameters are already set
         // therefore, we have to make both those requests as the component mounts
         axios.get("https://api.openaq.org/v1/countries")
@@ -39,7 +43,7 @@ export default class PlaceAndParameter extends Component{
             _this.setState({countries: response.data.results})
         })
         .catch((error)=>{
-            this.props.fetchError(error);
+            _this.props.fetchError(error);
         });
         
         axios.get("https://api.openaq.org/v1/parameters")
@@ -47,7 +51,7 @@ export default class PlaceAndParameter extends Component{
             _this.setState({parameters:response.data.results});
         })
         .catch((error)=>{
-            this.props.fetchError(error);
+            _this.props.fetchError(error);
         });
     }
     
@@ -64,7 +68,7 @@ export default class PlaceAndParameter extends Component{
                            });
         })
         .catch((error)=>{
-            this.props.fetchError(error);
+            _this.props.fetchError(error);
         });        
     }
     
@@ -81,7 +85,7 @@ export default class PlaceAndParameter extends Component{
                             });
         })
         .catch((error)=>{
-            this.props.fetchError(error);
+            _this.props.fetchError(error);
         });
     }
     
@@ -118,7 +122,7 @@ export default class PlaceAndParameter extends Component{
             _this.props.fetchMeasurements(response.data);
         })
         .catch((error)=>{
-            this.props.fetchError(error);
+            _this.props.fetchError(error);
         });
     }
     
