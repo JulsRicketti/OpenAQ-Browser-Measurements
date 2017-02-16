@@ -19,7 +19,6 @@ export default class PlaceAndParameter extends Component{
             currentLocation:"",
             currentParameter:"",
             measurements:"",
-            error: false
         };
         
         // we need to use the bind function so we can later have the same scope of the
@@ -38,12 +37,18 @@ export default class PlaceAndParameter extends Component{
         axios.get("https://api.openaq.org/v1/countries")
         .then((response)=>{
             _this.setState({countries: response.data.results})
+        })
+        .catch((error)=>{
+            this.props.fetchError(error);
         });
         
         axios.get("https://api.openaq.org/v1/parameters")
             .then ((response)=>{
             _this.setState({parameters:response.data.results});
         })
+        .catch((error)=>{
+            this.props.fetchError(error);
+        });
     }
     
     onSelectChangeCountry(e){
@@ -57,29 +62,36 @@ export default class PlaceAndParameter extends Component{
                                 cities: response.data.results,
                                 currentCountryCode: countryCode
                            });
+        })
+        .catch((error)=>{
+            this.props.fetchError(error);
         });        
     }
     
     onSelectChangeCity(e){
         var _this = this;
-        //Objective: when the country changes, we need to update the values in the city select box.
-        //For this, we first start with a get request to list the cities of the selected country:
+        //Objective: when the city changes, we need to update the values in the locations select box.
+        //For this, we first start with a get request to list the cities of the selected city:
         var currentCity = e.target.value;
         axios.get("https://api.openaq.org/v1/locations?country="+this.state.currentCountryCode+"&city="+currentCity)
         .then((response)=>{
-            console.log('response:', response);
             _this.setState({
                             locations: response.data.results,
                             currentCity: currentCity
                             });
+        })
+        .catch((error)=>{
+            this.props.fetchError(error);
         });
     }
     
     onSelectChangeLocations(e){
+        // For the locations we don't need to update anything else, except the current selected location
         this.setState({currentLocation: e.target.value});
     }
     
     onSelectChangeParameter(e){
+        // For the parameter, like the city, we only need to keep track of the current one selected
         this.setState({currentParameter: e.target.value});
     }
     
@@ -89,7 +101,7 @@ export default class PlaceAndParameter extends Component{
         var fetchDataUrl = "https://api.openaq.org/v1/measurements?";
         
         /*If select boxes have been changed, we need to add their new value to fetchDataUrl, to make the
-        appropriate request.*/
+        appropriate request. So we jsut concatenate that data to the base URL currently in fetchDataUrl*/
         if(this.state.currentCountryCode.length>0 && this.state.currentCountryCode!="All countries")
             fetchDataUrl += "country="+this.state.currentCountryCode+"&";
         if(this.state.currentCity.length>0 && this.state.currentCity!="All cities")
@@ -105,10 +117,12 @@ export default class PlaceAndParameter extends Component{
             // the MeasurementTable component
             _this.props.fetchMeasurements(response.data.results);
         })
+        .catch((error)=>{
+            this.props.fetchError(error);
+        });
     }
     
     render(){
-        // TODO: fix the format of the strings so with subscript
        return (
            <div>
            <Panel bsStyle="primary" header="Place & Parameter">
